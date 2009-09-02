@@ -1,1 +1,0 @@
-pref("toolkit.defaultChromeURI", "chrome://conflagration/content/xul/boot.xul");
