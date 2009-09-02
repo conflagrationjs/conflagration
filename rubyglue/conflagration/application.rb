@@ -1,6 +1,6 @@
 require 'conflagration/controller'
 require 'conflagration/processor'
-require 'conflagration/browser'
+require 'conflagration/browser_runner'
 
 module Conflagration
   class Application
@@ -12,16 +12,24 @@ module Conflagration
     end
     
     def root
-      @root ||= Pathname(@options[:root])
+      @root ||= Pathname(@options[:root]).expand_path
     end
     
     def pipe_dir
       @pipe_dir ||= root + "tmp/pipes"
     end
     
+    def pid_dir
+      @pid_dir ||= root + "tmp/pids"
+    end
+    
     # TODO - take something other than a raw rack env
     def process(env)
       raise "Please ensure you call init before processing" unless inited?
+    end
+    
+    def headless?
+      !!@options[:headless]
     end
     
     def environment
@@ -32,11 +40,15 @@ module Conflagration
       @options[:xul_application]
     end
     
+    def application_name
+      @application_name ||= @options[:application_name] || root.basename.to_s
+    end
+    
     def init
       raise "Already initialized" if inited?
       make_controller
       make_processor
-      spawn_browser
+      spawn_browser_runner
     end
     
     def inited?
@@ -46,8 +58,8 @@ module Conflagration
   private 
   
     def default_options
-      {:environment     => 'development',
-       :xul_application => Conflagration::ROOT + "xulapplication"}
+      {:environment      => 'development',
+       :xul_application  => Conflagration::LIBRARY_ROOT + "xulapplication"}
     end
   
     def make_controller
@@ -60,10 +72,15 @@ module Conflagration
       @processor.init
     end
     
-    def spawn_browser
-      @browser = Conflagration::Browser.new(:xul_application => xul_application,
-                                            :root            => root,
-                                            :environment     => environment)
+    def spawn_browser_runner
+      @browser = Conflagration::BrowserRunner.new(:xul_application        => xul_application,
+                                                  :application_name       => application_name,
+                                                  :headless               => headless?,
+                                                  :root                   => root,
+                                                  :pidfile                => pid_dir + "firefox.pid",
+                                                  :controller_input_pipe  => @controller.input_pipe.to_s,
+                                                  :controller_output_pipe => @controller.output_pipe.to_s,
+                                                  :environment            => environment)
       @browser.init
     end
     
