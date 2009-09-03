@@ -65,6 +65,19 @@ Conflagration.BrowserIPCController = Class.create({
     } finally {
       outputStream.close();
     }
+  },
+  
+  _handleShutdownServerMessage: function(msg) {
+    var outputStream = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(Ci.nsIFileOutputStream);
+    outputStream.init(this.outputFile, -1, -1, null);
+    try {
+      this.app.shutdownServer(msg.gluePID);
+      var outputMsg = JSON.stringify({messageType: 'ServerShutdown'}) + "\n";
+      outputStream.write(outputMsg, outputMsg.length);
+      outputStream.flush();
+    } finally {
+      outputStream.close();
+    }
   }
   
 });

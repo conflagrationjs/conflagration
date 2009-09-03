@@ -16,12 +16,34 @@ module Conflagration
     def process(rack_env)
       output_pipe = @output_pipe.open(Fcntl::O_WRONLY)
       output_pipe.fcntl(Fcntl::F_WRLCK)
-      output_pipe.puts(rack_env.to_json)
+      output_pipe.puts({'messageType' => 'Request', 'rackEnv' => rack_env}.to_json)
       output_pipe.flush
       output_pipe.close
       input_pipe = @input_pipe.open(Fcntl::O_RDONLY)
       input_pipe.fcntl(Fcntl::F_RDLCK)
       dispatch_response(JSON.parse(input_pipe.readline))
+    ensure
+      output_pipe.close unless output_pipe.closed?
+      input_pipe.close
+    end
+
+    def cleanup_pipes
+      @input_pipe.unlink
+      @output_pipe.unlink
+    end
+    
+    def stop_request_listener
+      output_pipe = @output_pipe.open(Fcntl::O_WRONLY)
+      output_pipe.fcntl(Fcntl::F_WRLCK)
+      output_pipe.puts({'messageType' => 'StopListening'}.to_json)
+      output_pipe.flush
+      output_pipe.close
+      input_pipe = @input_pipe.open(Fcntl::O_RDONLY)
+      input_pipe.fcntl(Fcntl::F_RDLCK)
+      response = JSON.parse(input_pipe.readline)
+      if response['messageType'] != 'ListeningStopped'
+        raise "Server did not stop listening for an unknown reason."
+      end
     ensure
       output_pipe.close unless output_pipe.closed?
       input_pipe.close

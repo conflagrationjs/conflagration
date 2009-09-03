@@ -25,8 +25,7 @@ Conflagration.RunnerApplication = Class.create({
   spawnServer: function(options) {
     // Handle the event that we for some reason already have an ApplicationServer for this glue PID
     if (this.serverPool[options.gluePID]) {
-      var existingError = new Error("Application Server spawn was requested but we already have a server for PID " + gluePID);
-      throw(existingError);
+      throw(new Error("Application Server spawn was requested but we already have a server for PID " + gluePID));
     } else {
       logger.debug("Spawning a new server for: " + $H(options).inspect());
       var appServer = new Conflagration.ApplicationServer(this, options);
@@ -35,6 +34,16 @@ Conflagration.RunnerApplication = Class.create({
     }
   },
   
+  shutdownServer: function(gluePID) {
+    var applicationServer = this.serverPool[gluePID];
+    if (applicationServer) {
+      logger.debug("Shutting down Application Server for PID " + gluePID);
+      applicationServer.shutdown();
+      logger.debug("Application Server for PID " + gluePID + " is now dead.");
+    } else {
+      throw(new Error("Application Server shutdown was requested but we don't have a server for PID " + gluePID));      
+    }
+  },
   
   _defineGetters: function() {
     var envChecker = function(envName) { return this.environment == envName; };

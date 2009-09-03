@@ -30,6 +30,27 @@ module Conflagration
       output_pipe.close unless output_pipe.closed?
       input_pipe.close
     end
+    
+    def shutdown_application_handler
+      output_pipe = @output_pipe.open(Fcntl::O_WRONLY)
+      input_pipe = @input_pipe.open(Fcntl::O_RDONLY | Fcntl::O_NONBLOCK)
+      output_pipe.fcntl(Fcntl::F_WRLCK)
+      input_pipe.fcntl(Fcntl::F_RDLCK)
+      output_pipe.puts(shutdown_message.to_json)
+      output_pipe.flush
+      output_pipe.close
+      # Wait for the response
+      while input_pipe.eof? do
+        sleep(0.5)
+      end
+      dispatch_message(JSON.parse(input_pipe.readline))
+    rescue => e
+      puts e.inspect
+      raise e
+    ensure
+      output_pipe.close unless output_pipe.closed?
+      input_pipe.close
+    end
 
   private
   
@@ -38,8 +59,12 @@ module Conflagration
        'outputPipe' => output_pipe.expand_path.to_s, 'gluePID' => Process.pid}
     end
     
+    def shutdown_message
+      {'messageType' => 'ShutdownServer', 'gluePID' => Process.pid}
+    end
+    
     def dispatch_message(msg)
-puts "Server spawned"
+      puts "Got message: #{msg.inspect}"
     end
     
   end

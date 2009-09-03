@@ -16,13 +16,21 @@ Conflagration.ApplicationServer = Class.create({
   // Implementation of nsIRunnable
   run: function() {
     logger.debug("Running ApplicationServer thread for glue PID " + this.options.gluePID);
-    while(true) { this._handleRequests(); };
+    try {
+      while(true) { this._handleRequests(); };
+    } catch (e if e.name == "StopListening") {
+      logger.debug("ApplicationServer " + this.options.gluePID + " is no longer listening for requests.");
+    };
   },
   
   start: function() {
     // We start up in a new thread for ourself to run in.
-    var backgroundThread = Cc["@mozilla.org/thread-manager;1"].getService().newThread(0);
-    backgroundThread.dispatch(this, backgroundThread.DISPATCH_NORMAL);
+    this.backgroundThread = Cc["@mozilla.org/thread-manager;1"].getService().newThread(0);
+    this.backgroundThread.dispatch(this, this.backgroundThread.DISPATCH_NORMAL);
+  },
+  
+  shutdown: function() {
+    this.backgroundThread.shutdown();
   },
   
   _initFiles: function() {
@@ -41,13 +49,31 @@ Conflagration.ApplicationServer = Class.create({
     var line = {};
     do {
       var moreLines = lineInputStream.readLine(line);
-      this._handleRequest(line.value);
+      this._handleMessage(line.value);
     } while (moreLines);
   },
   
-  _handleRequest: function(msg) {
+  _handleMessage: function(msg) {
     logger.debug("Handling: " + msg);
     var jsonMsg = JSON.parse(msg);
+    this['_handle' + jsonMsg.messageType + 'Message'](jsonMsg);
+  },
+  
+  _handleStopListeningMessage: function(msg) {
+    var outputStream = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(Ci.nsIFileOutputStream);
+    outputStream.init(this.outputFile, -1, -1, null);
+    try {
+      var outputMsg = JSON.stringify({messageType: "ListeningStopped"}) + "\n";
+      outputStream.write(outputMsg, outputMsg.length);
+      outputStream.flush();
+    } finally {
+      outputStream.close();
+    }
+    // TODO - ugh. Basically using exceptions as flow control. Let's not do this for-realsies
+    throw({name: "StopListening", message: "Server listening cancellation requested."});
+  },
+  
+  _handleRequestMessage: function(msg) {
     this._dispatchResponse(msg);
   },
   
@@ -55,7 +81,7 @@ Conflagration.ApplicationServer = Class.create({
     var outputStream = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(Ci.nsIFileOutputStream);
     outputStream.init(this.outputFile, -1, -1, null);
     try {
-      var outputMsg = JSON.stringify({status: 200, headers: {}, body: "Hello World"}) + "\n";
+      var outputMsg = JSON.stringify({messageType: 'response', status: 200, headers: {}, body: "Hello World"}) + "\n";
       outputStream.write(outputMsg, outputMsg.length);
       outputStream.flush();
     } finally {

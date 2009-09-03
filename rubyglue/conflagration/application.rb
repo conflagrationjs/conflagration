@@ -51,6 +51,7 @@ module Conflagration
       make_processor
       spawn_browser_runner
       spawn_application_handler
+      setup_exit_handler
       @inited = true
     end
     
@@ -58,7 +59,29 @@ module Conflagration
       @inited
     end    
 
+    def cleanup
+      stop_request_listener
+      shutdown_application_handler
+      cleanup_pipes
+    end
+        
   private 
+  
+    def stop_request_listener
+      @processor.stop_request_listener
+    end
+    
+    def shutdown_application_handler
+      @controller.shutdown_application_handler
+    end
+    
+    def cleanup_pipes
+      @processor.cleanup_pipes
+    end
+    
+    def setup_exit_handler
+      at_exit { self.cleanup }
+    end
   
     def default_options
       {:environment      => 'development',

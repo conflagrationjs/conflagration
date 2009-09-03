@@ -18,8 +18,12 @@ module Conflagration
         pid = fork do
           options.each { |k,v| ENV[k.to_s] = v.to_s }
           run_headless if options[:headless]
+          # Change our group so the browser doesn't die when the spawner does. This would be bad.
+          Process.setpgid(0, Process.pid)
           exec(@browser_path, "-app", xul_application_ini, "-P", options[:application_name])
         end
+        # Detach so firefox doesn't auto-die when we do.
+        Process.detach(pid)
         return pid.to_i
       end
       
