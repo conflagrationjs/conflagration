@@ -7,6 +7,7 @@ Conflagration.RunnerApplication = Class.create({
     this.options = options;
     this.conflagrationInfo = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo);
     this._defineGetters();
+    this.serverPool = {};
   },
   
   start: function() {
@@ -22,7 +23,16 @@ Conflagration.RunnerApplication = Class.create({
   },
   
   spawnServer: function(options) {
-    logger.debug("Spawning a new server for: " + $H(options).inspect());
+    // Handle the event that we for some reason already have an ApplicationServer for this glue PID
+    if (this.serverPool[options.gluePID]) {
+      var existingError = new Error("Application Server spawn was requested but we already have a server for PID " + gluePID);
+      throw(existingError);
+    } else {
+      logger.debug("Spawning a new server for: " + $H(options).inspect());
+      var appServer = new Conflagration.ApplicationServer(this, options);
+      appServer.start();
+      this.serverPool[options.gluePID] = appServer;
+    }
   },
   
   
@@ -37,6 +47,6 @@ Conflagration.RunnerApplication = Class.create({
   _initializeBrowserIPCController: function() {
     this.browserIPCController = new Conflagration.BrowserIPCController(this, {outputPipe: this.options.controller_input_pipe, 
                                                                               inputPipe: this.options.controller_output_pipe});
-    this.browserIPCController.initiate();
+    this.browserIPCController.start();
   }
 });

@@ -1,3 +1,4 @@
+# TODO - merge stuff from Controller and Processor to PipeIPC
 require 'conflagration/pipe_ipc'
 require 'json/pure'
 

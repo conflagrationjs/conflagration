@@ -26,6 +26,7 @@ module Conflagration
     # TODO - take something other than a raw rack env
     def process(env)
       raise "Please ensure you call init before processing" unless inited?
+      @processor.process(env)
     end
     
     def headless?
@@ -50,6 +51,7 @@ module Conflagration
       make_processor
       spawn_browser_runner
       spawn_application_handler
+      @inited = true
     end
     
     def inited?

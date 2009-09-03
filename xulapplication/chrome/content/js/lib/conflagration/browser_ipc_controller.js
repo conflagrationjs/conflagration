@@ -1,3 +1,4 @@
+// TODO - merge the IPC code with the stuff in ApplicationServer
 Conflagration.BrowserIPCController = Class.create({
   // XPCOM Component jank
   classDescription: "Conflagration Browser IPC Controller Component",
@@ -12,7 +13,7 @@ Conflagration.BrowserIPCController = Class.create({
     this._initFiles();
   },
   
-  initiate: function() {
+  start: function() {
     // We start up in a new thread for ourself to run in.
     var backgroundThread = Cc["@mozilla.org/thread-manager;1"].getService().newThread(0);
     backgroundThread.dispatch(this, backgroundThread.DISPATCH_NORMAL);
@@ -45,7 +46,7 @@ Conflagration.BrowserIPCController = Class.create({
       logger.fatal("Couldn't handle message: '" + str + "'. Exception: " + e.name + " - " + e.message);
     }
   },
-  
+
   _initFiles: function() {
     this.outputFile = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
     this.outputFile.initWithPath(this.options.outputPipe);
@@ -57,7 +58,7 @@ Conflagration.BrowserIPCController = Class.create({
     var outputStream = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(Ci.nsIFileOutputStream);
     outputStream.init(this.outputFile, -1, -1, null);
     try {
-      this.app.spawnServer({gluePid: msg.gluePID, outputPipe: msg.inputPipe, inputPipe: msg.outputPipe});
+      this.app.spawnServer({gluePID: msg.gluePID, outputPipe: msg.inputPipe, inputPipe: msg.outputPipe});
       var outputMsg = JSON.stringify({messageType: 'ServerSpawned'}) + "\n";
       outputStream.write(outputMsg, outputMsg.length);
       outputStream.flush();
