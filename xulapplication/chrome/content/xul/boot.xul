@@ -2,6 +2,13 @@
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 
 <window id="main" title="Conflagration Console" width="800" height="600" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-  <script type="application/x-javascript" src="resource://js/boot.js" />
+  <script type="application/x-javascript" src="resource://js/lib/conflagration.js" />
+  <script type="application/x-javascript">
+    this.addEventListener("load", function(){ Conflagration.boot(this) }, false);
+  </script>
   <caption label="Conflagration Console" />
+  
+  <statusbar>
+  	<statusbarpanel label="Current Environment: "/>
+  </statusbar>
 </window>
