@@ -34,7 +34,7 @@ Conflagration.Initializer = Class.create({
     var consoleService = Cc["@mozilla.org/consoleservice;1"].getService(Ci.nsIConsoleService);
     this.app.mainWindow.logger = new Conflagration.Logger();
     // TODO - this is shitty but just gives us some rudimentary console logging for now.
-    var consoleListener = {observe: function(consoleMessage) { logger.debug(consoleMessage.message); }};
+    var consoleListener = {observe: function(consoleMessage) { logger.debug("[JSCONSOLE] " + consoleMessage.message); }};
     consoleService.registerListener(consoleListener);
   }
   
