@@ -2,7 +2,7 @@ Conflagration.BrowserIPCController = Class.create({
   // XPCOM Component jank
   classDescription: "Conflagration Browser IPC Controller Component",
   classID:          Components.ID("071373d0-9829-11de-8a39-0800200c9a66"),
-  contractID:       "@gironda.org/browser-ipc-controller;1",
+  contractID:       "@gironda.org/conflagration/browser-ipc-controller;1",
   QueryInterface:   XPCOMUtils.generateQI([Ci.nsIRunnable]),
   
   initialize: function(app, options) {
