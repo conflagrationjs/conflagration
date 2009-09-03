@@ -67,6 +67,13 @@ Conflagration.BrowserIPCController = Class.create({
     }
   },
   
+  _handleShutdownBrowserMessage: function(msg) {
+    logger.debug("I hate my life. Every day I polish my revolver and I shoot my head. Like a rock star.");
+    var appStartup = Cc["@mozilla.org/toolkit/app-startup;1"].getService(Ci.nsIAppStartup);
+    // FIXME - hah. this seems to cause a browser crash on mac os x. sweet.
+    appStartup.quit(Ci.nsIAppStartup.eForceQuit);
+  },
+  
   _handleShutdownServerMessage: function(msg) {
     var outputStream = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(Ci.nsIFileOutputStream);
     outputStream.init(this.outputFile, -1, -1, null);

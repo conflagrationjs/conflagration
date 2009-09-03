@@ -29,6 +29,10 @@ module Conflagration
       @processor.process(env)
     end
     
+    def shutdown_browser?
+      !!@options[:shutdown_browser]
+    end
+    
     def headless?
       !!@options[:headless]
     end
@@ -63,10 +67,17 @@ module Conflagration
       stop_request_listener
       shutdown_application_handler
       cleanup_pipes
+      shutdown_browser
+      exit(0)
     end
         
   private 
   
+    def shutdown_browser
+      return unless shutdown_browser?
+      @controller.shutdown_browser
+    end
+    
     def stop_request_listener
       @processor.stop_request_listener
     end
