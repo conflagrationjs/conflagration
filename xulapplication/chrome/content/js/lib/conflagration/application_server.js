@@ -55,11 +55,11 @@ Conflagration.ApplicationServer = Class.create({
     var outputStream = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(Ci.nsIFileOutputStream);
     outputStream.init(this.outputFile, -1, -1, null);
     try {
-     var outputMsg = JSON.stringify({status: 200, headers: {}, body: "Hello World"}) + "\n";
-     outputStream.write(outputMsg, outputMsg.length);
-     outputStream.flush();
+      var outputMsg = JSON.stringify({status: 200, headers: {}, body: "Hello World"}) + "\n";
+      outputStream.write(outputMsg, outputMsg.length);
+      outputStream.flush();
     } finally {
-     outputStream.close();
+      outputStream.close();
     }
   }
   
