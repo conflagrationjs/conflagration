@@ -1,3 +1,5 @@
+loadResource("js/lib/conflagration/logger")
+
 Conflagration.Initializer = Class.create({
   motdURL: "resource://root/motd.txt",
   
@@ -7,6 +9,7 @@ Conflagration.Initializer = Class.create({
   
   go: function() {
     this._displayMOTD();
+    this._initializeLogging();
     this._setFocus();
     this.app.initializationDone();
   },
@@ -25,6 +28,14 @@ Conflagration.Initializer = Class.create({
   
   _setFocus: function() {
     this.app.mainWindow.focus();
+  },
+  
+  _initializeLogging: function() {
+    var consoleService = Cc["@mozilla.org/consoleservice;1"].getService(Ci.nsIConsoleService);
+    this.app.mainWindow.logger = new Conflagration.Logger();
+    // TODO - this is shitty but just gives us some rudimentary console logging for now.
+    var consoleListener = {observe: function(consoleMessage) { logger.debug(consoleMessage.message); }};
+    consoleService.registerListener(consoleListener);
   }
   
 });

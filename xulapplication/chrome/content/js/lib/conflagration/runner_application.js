@@ -22,7 +22,7 @@ Conflagration.RunnerApplication = Class.create({
   },
   
   spawnServer: function(options) {
-puts("Spawning a new server");
+    logger.debug("Spawning a new server for: " + $H(options).inspect());
   },
   
   

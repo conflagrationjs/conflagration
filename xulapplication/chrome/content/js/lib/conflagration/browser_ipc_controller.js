@@ -40,11 +40,9 @@ Conflagration.BrowserIPCController = Class.create({
       var msg = JSON.parse(str);
       this['_handle' + msg.messageType + 'Message'](msg);
     } catch (e if e.name == "SyntaxError") {
-      // TODO - use actual logging
-      puts("Couldn't parse JSON message: " + str);
+      logger.fatal("Couldn't parse JSON message: " + str);
     } catch (e) {
-      // TODO - use actual logging
-      puts("Couldn't handle message: " + str);
+      logger.fatal("Couldn't handle message: '" + str + "'. Exception: " + e.name + " - " + e.message);
     }
   },
   
