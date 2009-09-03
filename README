@@ -1,0 +1,8 @@
+Conflagration
+=============
+
+Homepage: http://github.com/gabrielg/conflagration/tree/master
+
+This project is an outlandish attempt to get Firefox deployable under any Rack-compliant server. Passenger, for example. The notion being that a small amount of Ruby glue code takes incoming requests and hands them off to Firefox where they're handled by a JavaScript version of Rails. It is currently unusable and mostly a proof-of-concept. Examples will be available at http://github.com/gabrielg/conflagration-examples/tree/master.
+
+- Gabriel Gironda
