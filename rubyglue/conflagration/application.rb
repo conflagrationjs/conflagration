@@ -49,6 +49,7 @@ module Conflagration
       make_controller
       make_processor
       spawn_browser_runner
+      spawn_application_handler
     end
     
     def inited?
@@ -82,6 +83,10 @@ module Conflagration
                                                   :controller_output_pipe => @controller.output_pipe.to_s,
                                                   :environment            => environment)
       @browser.init
+    end
+    
+    def spawn_application_handler
+      @controller.spawn_application_handler(@processor)
     end
     
   end # Application

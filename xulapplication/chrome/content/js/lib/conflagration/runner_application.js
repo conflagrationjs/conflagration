@@ -1,4 +1,5 @@
 loadResource("js/lib/conflagration/browser_ipc_controller");
+loadResource("js/lib/conflagration/application_server");
 
 Conflagration.RunnerApplication = Class.create({
   initialize: function(mainWindow, options) {
@@ -19,6 +20,11 @@ Conflagration.RunnerApplication = Class.create({
   initializationDone: function() {
     this._initializeBrowserIPCController();
   },
+  
+  spawnServer: function(options) {
+puts("Spawning a new server");
+  },
+  
   
   _defineGetters: function() {
     var envChecker = function(envName) { return this.environment == envName; };

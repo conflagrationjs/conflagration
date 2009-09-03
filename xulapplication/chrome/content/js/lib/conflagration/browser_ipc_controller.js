@@ -56,7 +56,16 @@ Conflagration.BrowserIPCController = Class.create({
   },
   
   _handleSpawnServerMessage: function(msg) {
-    puts("Spawning server");
+    var outputStream = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(Ci.nsIFileOutputStream);
+    outputStream.init(this.outputFile, -1, -1, null);
+    try {
+      this.app.spawnServer({gluePid: msg.gluePID, outputPipe: msg.inputPipe, inputPipe: msg.outputPipe});
+      var outputMsg = JSON.stringify({messageType: 'ServerSpawned'}) + "\n";
+      outputStream.write(outputMsg, outputMsg.length);
+      outputStream.flush();
+    } finally {
+      outputStream.close();
+    }
   }
   
 });
