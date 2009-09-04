@@ -1,4 +1,5 @@
 loadResource("js/lib/conflagration/logger")
+loadResource("js/ext/resource")
 
 Conflagration.Initializer = Class.create({
   motdURL: "resource://root/motd.txt",
@@ -11,19 +12,13 @@ Conflagration.Initializer = Class.create({
     this._displayMOTD();
     this._initializeLogging();
     this._setFocus();
+    this._setupResourceHandler();
     this.app.initializationDone();
   },
   
   _displayMOTD: function() {
-    // This is retarded. I hate you so much sometimes, XPCOM.
-    var ios = Cc['@mozilla.org/network/io-service;1'].getService(Ci.nsIIOService);
-    var stream = ios.newChannel(this.motdURL, null, null).open();
-    var scriptableStream = Cc["@mozilla.org/scriptableinputstream;1"].getService(Ci.nsIScriptableInputStream);
-    scriptableStream.init(stream);
-    var str = scriptableStream.read(stream.available());
-    scriptableStream.close();
-    stream.close();
-    print(str.interpolate({version: this.app.conflagrationInfo.version}));
+    var motd = (new Resource(this.motdURL)).read();
+    print(motd.interpolate({version: this.app.conflagrationInfo.version}));
   },
   
   _setFocus: function() {
@@ -36,6 +31,16 @@ Conflagration.Initializer = Class.create({
     // TODO - this is shitty but just gives us some rudimentary console logging for now.
     var consoleListener = {observe: function(consoleMessage) { logger.debug("[JSCONSOLE] " + consoleMessage.message); }};
     consoleService.registerListener(consoleListener);
+  },
+  
+  _setupResourceHandler: function() {
+    var ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
+    var resProt = ioService.getProtocolHandler("resource").QueryInterface(Ci.nsIResProtocolHandler);
+
+    var aliasFile = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
+    aliasFile.initWithPath(this.app.options.application_root);
+    var aliasURI = ioService.newFileURI(aliasFile);
+    resProt.setSubstitution("user-application", aliasURI);
   }
   
 });

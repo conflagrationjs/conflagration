@@ -1,3 +1,6 @@
+loadResource("js/lib/conflagration/router");
+loadResource("js/lib/conflagration/dispatcher");
+
 // TODO - merge the IPC code with the stuff in BrowserIPCController
 Conflagration.ApplicationServer = Class.create({
   // XPCOM Component jank
@@ -11,6 +14,8 @@ Conflagration.ApplicationServer = Class.create({
     this.options = options;
     this.wrappedJSObject = this;
     this._initFiles();
+    this.router = Conflagration.Router.initializeFromApplication(app);
+    this.dispatcher = new Conflagration.Dispatcher(this.router);
   },
   
   // Implementation of nsIRunnable
@@ -81,7 +86,12 @@ Conflagration.ApplicationServer = Class.create({
     var outputStream = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(Ci.nsIFileOutputStream);
     outputStream.init(this.outputFile, -1, -1, null);
     try {
-      var outputMsg = JSON.stringify({messageType: 'response', status: 200, headers: {}, body: "Hello World"}) + "\n";
+      var rackEnv = msg.rackEnv;
+      // FIXME - this is ballsacks, but for now until we have a real request object and all that jazz we just
+      // reconstruct the URI and hand it off to the ghetto-dispatcher
+      var requestURI = rackEnv['rack.url_scheme'] + "://" + rackEnv['HTTP_HOST'] + rackEnv['REQUEST_URI'];
+      var responseBody = this.dispatcher.go(requestURI);
+      var outputMsg = JSON.stringify({messageType: 'response', status: 200, headers: {}, body: responseBody}) + "\n";
       outputStream.write(outputMsg, outputMsg.length);
       outputStream.flush();
     } finally {

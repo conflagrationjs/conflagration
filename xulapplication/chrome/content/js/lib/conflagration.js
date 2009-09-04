@@ -13,6 +13,7 @@ var Conflagration = {
   _initializeHelpers: function(mainWindow) {
     mainWindow.Cc = Components.classes;
     mainWindow.Ci = Components.interfaces;
+    mainWindow.Cu = Components.utils;
     
     // Global 'load' function to ease loading non-JSM code like Prototype
     var loader = Cc["@mozilla.org/moz/jssubscript-loader;1"].getService(Ci.mozIJSSubScriptLoader); 
@@ -22,7 +23,12 @@ var Conflagration = {
     
     //Shortcut for loading resources
     mainWindow.loadResource = function(path, moduleScope) {
-      load('resource://' + encodeURI(path) + ".js", moduleScope);
+      var resourcePath = 'resource://' + encodeURI(path) + ".js";
+      try {
+        load(resourcePath, moduleScope);
+      } catch (e if e.name == undefined) {
+        throw({name: "LoadError", message: "no such resource to load -- " + resourcePath});
+      };
     };
     
     mainWindow.print = mainWindow.dump;
@@ -31,8 +37,8 @@ var Conflagration = {
   
   _loadBasicDependencies: function() {
     loadResource("vendor/prototype");
-    // Loads this via Components.utils.import as it's a JSM file.
-    Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
+    // Loads this via Cu.import as it's a JSM file.
+    Cu.import("resource://gre/modules/XPCOMUtils.jsm");
   },
   
   _extractEnvironmentVariablesAsOptions: function() {
