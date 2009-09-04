@@ -12,7 +12,12 @@ Conflagration.Dispatcher = Class.create({
     var path = url.filePath;
     var params = url.query.toQueryParams();
     var routeMatch = this._router.matchRoute(path, params);
-    return this._dispatch(path, routeMatch, params);
+    if (routeMatch) {
+      return this._dispatch(path, routeMatch, params);
+    } else {
+      logger.debug("Oh god. I couldn't find a route for: " + path);
+      throw({name: "RoutingError", message: "No route found for " + url});
+    }
   },
   
   _dispatch: function(path, routeMatch, params) {

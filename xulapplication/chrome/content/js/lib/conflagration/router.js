@@ -18,7 +18,7 @@ Conflagration.Router = Class.create({
     if (foundRoute) {
       return {pathParts: routePathParts, controller: foundRoute.controller, action: foundRoute.action};
     } else {
-      throw({name: "RoutingError", message: "No route found for " + path});
+      return null;
     }
   },
 });

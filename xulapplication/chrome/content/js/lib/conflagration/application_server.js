@@ -90,8 +90,14 @@ Conflagration.ApplicationServer = Class.create({
       // FIXME - this is ballsacks, but for now until we have a real request object and all that jazz we just
       // reconstruct the URI and hand it off to the ghetto-dispatcher
       var requestURI = rackEnv['rack.url_scheme'] + "://" + rackEnv['HTTP_HOST'] + rackEnv['REQUEST_URI'];
-      var responseBody = this.dispatcher.go(requestURI);
-      var outputMsg = JSON.stringify({messageType: 'response', status: 200, headers: {}, body: responseBody}) + "\n";
+      try {
+        var status = 200;
+        var responseBody = this.dispatcher.go(requestURI);
+      } catch (e if e.name == "RoutingError") {
+        var status = 404;
+        var responseBody = "NOTHIN HERE HOMEBOY";
+      }
+      var outputMsg = JSON.stringify({messageType: 'response', status: status, headers: {}, body: responseBody}) + "\n";
       outputStream.write(outputMsg, outputMsg.length);
       outputStream.flush();
     } finally {
